@@ -1,0 +1,48 @@
+name: AndromedaSurvivalShops
+version: 1.0-SNAPSHOT
+main: net.whispwriting.andromedasurvivalshops.AndromedaShops
+api-version: 1.13
+prefix: AS-Shops
+authors: [WhispTheFox]
+description: A shop plugin for my server
+website: https://whispwriting.net
+
+commands:
+  shop:
+    description: open or modify a shop
+    usage: /shop
+
+permissions:
+  Andromeda.shop.open:
+    description: Open shops
+    default: true
+  Andromeda.shop.open.others:
+    description: Open shops for other players
+    default: op
+  Andromeda.shop.add:
+    description: Add an item to a shop
+    default: op
+  Andromeda.shop.remove:
+    description: Remove an item from a shop
+    default: op
+  Andromeda.shop.create:
+    description: Create shops
+    default: op
+  Andromeda.shop.delete:
+    description: Delete shops
+    default: op
+  Andromeda.admin:
+    description: Admin permissions
+    default: op
+    children:
+      Andromeda.shop.add: true
+      Andromeda.shop.remove: true
+      Andromeda.shop.create: true
+      Andromeda.shop.delete: true
+      Andromeda.shop.open.others: true
+  Andromeda.*:
+    description: Wildcard Permission
+    default: op
+    children:
+      Andromeda.admin: true
+      Andromeda.shop.use: true

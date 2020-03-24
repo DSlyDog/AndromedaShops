@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="AndromedaShops">
+    <output-path>$PROJECT_DIR$/out/artifacts/AndromedaShops</output-path>
+    <root id="archive" name="AndromedaShops.jar">
+      <element id="module-output" name="AndromedaSurvivalShops" />
+    </root>
+  </artifact>
+</component>
