@@ -1,9 +1,7 @@
 package net.whispwriting.andromedasurvivalshops.events;
 
-import net.whispwriting.andromedasurvivalshops.AndromedaShops;
-import net.whispwriting.andromedasurvivalshops.guis.Shop;
+import net.whispwriting.andromedasurvivalshops.AylaShops;
 import net.whispwriting.andromedasurvivalshops.guis.ShopAmount;
-import net.whispwriting.andromedasurvivalshops.guis.UIItemData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -14,11 +12,11 @@ import org.bukkit.inventory.ItemStack;
 
 public class ShopAmountInteract implements Listener {
 
-    private AndromedaShops plugin;
+    private AylaShops plugin;
     private String uuid;
     private ShopAmount shop;
 
-    public ShopAmountInteract(AndromedaShops plugin, String uuid, ShopAmount shop){
+    public ShopAmountInteract(AylaShops plugin, String uuid, ShopAmount shop){
         this.plugin = plugin;
         this.uuid = uuid;
         this.shop = shop;

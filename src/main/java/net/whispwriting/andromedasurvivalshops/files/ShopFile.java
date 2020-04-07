@@ -1,10 +1,10 @@
 package net.whispwriting.andromedasurvivalshops.files;
 
-import net.whispwriting.andromedasurvivalshops.AndromedaShops;
+import net.whispwriting.andromedasurvivalshops.AylaShops;
 
 public class ShopFile extends AbstractFile {
 
-    public ShopFile(AndromedaShops pl, String filename) {
+    public ShopFile(AylaShops pl, String filename) {
         super(pl, filename + ".yml", "/shops");
     }
 }

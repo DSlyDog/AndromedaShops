@@ -1,6 +1,6 @@
 package net.whispwriting.andromedasurvivalshops.utils;
 
-import net.whispwriting.andromedasurvivalshops.AndromedaShops;
+import net.whispwriting.andromedasurvivalshops.AylaShops;
 import net.whispwriting.andromedasurvivalshops.guis.UIItemData;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectOutputStream;
@@ -14,9 +14,9 @@ import java.util.logging.Level;
 public abstract class SQL {
 
     protected Connection connection;
-    protected AndromedaShops plugin;
+    protected AylaShops plugin;
 
-    public SQL(AndromedaShops plugin){
+    public SQL(AylaShops plugin){
         this.plugin = plugin;
     }
 
@@ -25,10 +25,14 @@ public abstract class SQL {
     public abstract void setup();
     public abstract void loadShops();
     public abstract boolean addShop(String name, String colors);
+    public abstract boolean addShopAdvanced(String name, String colors);
     public abstract boolean createShop(String name);
+    public abstract boolean createShopAdvanced(String name);
     public abstract ResultSet loadShop(String name);
     public abstract void addItem(UIItemData item, String name);
+    public abstract void addItemAdvanced(UIItemData item, String name);
     public abstract boolean deleteShop(String name);
+    public abstract boolean deleteShopAdvanced(String name);
     public abstract void deleteItem(String shop, UIItemData item);
 
     protected boolean tableExists(String table){
@@ -63,6 +67,28 @@ public abstract class SQL {
             return Base64Coder.encodeLines(outputStream.toByteArray());
         } catch (IOException e) {
             return null;
+        }
+    }
+
+    public void fixIndex(String shop){
+        connect();
+        try {
+            PreparedStatement statement = connection.prepareStatement("select * from " + shop);
+            ResultSet results = statement.executeQuery();
+            int i = 0;
+            int page = 1;
+            while (results.next()){
+                statement = connection.prepareStatement("update " + shop + " set indexs=" + i + ", page=" + page + " where id='" + results.getString("id") + "'");
+                statement.executeUpdate();
+                i++;
+                if (i > 44){
+                    i = 0;
+                    page++;
+                }
+            }
+        }catch(SQLException e){
+            plugin.getLogger().log(Level.WARNING, "Failed to create the shops list.");
+            e.printStackTrace();
         }
     }
 }

@@ -1,8 +1,8 @@
 package net.whispwriting.andromedasurvivalshops.events;
 
 import net.whispwriting.andromedasurvivalshops.AylaShops;
-import net.whispwriting.andromedasurvivalshops.guis.Shop;
-import net.whispwriting.andromedasurvivalshops.guis.UIItemData;
+import net.whispwriting.andromedasurvivalshops.guis.AdvancedShop;
+import net.whispwriting.andromedasurvivalshops.guis.AdvancedShopAmount;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -11,13 +11,13 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class ShopInteract implements Listener {
+public class ShopAmountInteractAdvanced implements Listener {
 
     private AylaShops plugin;
     private String uuid;
-    private Shop shop;
+    private AdvancedShopAmount shop;
 
-    public ShopInteract(AylaShops plugin, String uuid, Shop shop){
+    public ShopAmountInteractAdvanced(AylaShops plugin, String uuid, AdvancedShopAmount shop){
         this.plugin = plugin;
         this.uuid = uuid;
         this.shop = shop;
@@ -29,16 +29,9 @@ public class ShopInteract implements Listener {
             return;
         }
         try {
+            e.setCancelled(true);
             ItemStack item = e.getCurrentItem();
-            String id = item.getItemMeta().getLocalizedName();
-            UIItemData itemData = shop.getItem(id);
-            if (itemData != null) {
-                e.setCancelled(true);
-                shop.clicked((Player) e.getWhoClicked(), item, plugin);
-            }else if (id.equals("previousPage") || id.equals("nextPage") || id.equals("pageNum")){
-                e.setCancelled(true);
-                shop.clicked((Player) e.getWhoClicked(), item, plugin);
-            }
+            shop.clicked((Player) e.getWhoClicked(), item, plugin);
         }catch(NullPointerException err){
             // do nothing
         }
@@ -49,8 +42,6 @@ public class ShopInteract implements Listener {
         if (!uuid.equals(e.getPlayer().getUniqueId().toString())){
             return;
         }
-        HandlerList.unregisterAll(ShopInteract.this);
+        HandlerList.unregisterAll(ShopAmountInteractAdvanced.this);
     }
-
 }
-

@@ -2,10 +2,11 @@ package net.whispwriting.andromedasurvivalshops.guis;
 
 import net.whispwriting.andromedasurvivalshops.AylaShops;
 import net.whispwriting.andromedasurvivalshops.events.ShopAmountInteract;
+import net.whispwriting.andromedasurvivalshops.events.ShopAmountInteractAdvanced;
 import net.whispwriting.andromedasurvivalshops.utils.SQL;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -15,10 +16,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class Shop {
-
+public class AdvancedShop {
     private List<UIItemData> items = new ArrayList<>();
     private Inventory inv, returnInv;
     private String inventoryString, name, colors;
@@ -29,15 +31,15 @@ public class Shop {
     private int onPage = 1;
     private SQL sql;
 
-    public Shop(String name, String colors, SQL sql){
+    public AdvancedShop(String name, String colors, SQL sql){
         this.name = name;
         this.colors = colors;
         this.sql = sql;
-        if(sql.createShop(name))
-            sql.addShop(name, colors);
+        if(sql.createShopAdvanced(name))
+            sql.addShopAdvanced(name, colors);
     }
 
-    public Shop(String name, String colors, List<UIItemData> items){
+    public AdvancedShop(String name, String colors, List<UIItemData> items){
         this.name = name;
         this.items = items;
         this.colors = colors;
@@ -55,11 +57,11 @@ public class Shop {
         return inv;
     }
 
-    public boolean addItem(String type, double price, double sellPrice){
+    public boolean addItem(String type, String id, double price, double sellPrice, List<String> commands, List<String> lore){
         incrementCounters();
-        UIItemData item = Utils.createItem(type, type, price, sellPrice, currentPage, currentIndex, items);
+        UIItemData item = Utils.createItem(type, id, price, sellPrice, currentPage, currentIndex, items, commands, lore);
         if (item != null)
-            sql.addItem(item, name);
+            sql.addItemAdvanced(item, name);
         return true;
     }
 
@@ -94,10 +96,10 @@ public class Shop {
         }else{
             for (UIItemData itemData : items) {
                 if (itemData.getID().equals(id)) {
-                    ShopAmount shopAmount = new ShopAmount(clicked.getType(), clicked.getType().name(), itemData.getPrice(), itemData.getSellPrice());
+                    AdvancedShopAmount shopAmount = new AdvancedShopAmount(clicked.getType(), clicked.getType().name(), itemData.getPrice(), itemData.getSellPrice(), itemData);
                     shopAmount.init();
                     player.closeInventory();
-                    Bukkit.getPluginManager().registerEvents(new ShopAmountInteract(plugin, player.getUniqueId().toString(), shopAmount), plugin);
+                    Bukkit.getPluginManager().registerEvents(new ShopAmountInteractAdvanced(plugin, player.getUniqueId().toString(), shopAmount), plugin);
                     player.openInventory(shopAmount.GUI());
                     break;
                 }
@@ -161,8 +163,14 @@ public class Shop {
                 int page = itemSet.getInt("page");
                 int index = itemSet.getInt("indexs");
                 String id = itemSet.getString("id");
+                String commands = itemSet.getString("commands");
+                String info = itemSet.getString("info");
                 ItemStack item = itemStackFromBase64(itemSet.getString("item"));
-                UIItemData itemData = new UIItemData(item, id, price, sellPrice, page, index);
+                String[] infoBlock = info.split(",");
+                String[] cmdBlock = commands.split(",");
+                List<String> infoArray = new ArrayList<>(Arrays.asList(infoBlock));
+                List<String> cmdArray = new ArrayList<>(Arrays.asList(cmdBlock));
+                UIItemData itemData = new UIItemData(item, id, price, sellPrice, page, index, cmdArray, infoArray);
                 items.add(itemData);
             }
             if (!items.isEmpty()) {
@@ -177,7 +185,7 @@ public class Shop {
     }
 
     public boolean delete(){
-        return sql.deleteShop(name);
+        return sql.deleteShopAdvanced(name);
     }
 
     public ItemStack itemStackFromBase64(String data) {

@@ -1,7 +1,8 @@
 package net.whispwriting.andromedasurvivalshops.utils;
 
-import net.whispwriting.andromedasurvivalshops.AndromedaShops;
+import net.whispwriting.andromedasurvivalshops.AylaShops;
 import net.whispwriting.andromedasurvivalshops.files.ConfigFile;
+import net.whispwriting.andromedasurvivalshops.guis.AdvancedShop;
 import net.whispwriting.andromedasurvivalshops.guis.Shop;
 import net.whispwriting.andromedasurvivalshops.guis.UIItemData;
 
@@ -14,8 +15,9 @@ public class MySQL extends SQL{
     private String host, database, username, password;
     private int port;
     private Map<String, Shop> shops;
+    private Map<String, AdvancedShop> advancedShops;
 
-    public MySQL(ConfigFile config, AndromedaShops plugin, Map<String, Shop> shops){
+    public MySQL(ConfigFile config, AylaShops plugin, Map<String, Shop> shops, Map<String, AdvancedShop> advancedShops){
         super(plugin);
         this.host = config.get().getString("host");
         this.username = config.get().getString("username");
@@ -23,6 +25,7 @@ public class MySQL extends SQL{
         this.database = config.get().getString("database");
         this.port = config.get().getInt("port");
         this.shops = shops;
+        this.advancedShops = advancedShops;
     }
 
     @Override
@@ -36,6 +39,9 @@ public class MySQL extends SQL{
             }
             if(!tableExists("shops")){
                 createShopList("shops");
+            }
+            if(!tableExists("shops_advanced")){
+                createShopList("shops_advanced");
             }
         }catch(SQLException e){
             plugin.getLogger().log(Level.SEVERE, "Failed to make connection to database. Please check your config.");
@@ -78,6 +84,18 @@ public class MySQL extends SQL{
                 else
                     plugin.getLogger().log(Level.WARNING, "Failed to load shop " + name + ".");
             }
+            statement = connection.prepareStatement("select * from shops_advanced");
+            results = statement.executeQuery();
+            while(results.next()) {
+                String name = results.getString("name");
+                String colors = results.getString("colors");
+                AdvancedShop shop = new AdvancedShop(name, colors, this);
+                boolean loaded = shop.load();
+                if (loaded)
+                    advancedShops.put(name, shop);
+                else
+                    plugin.getLogger().log(Level.WARNING, "Failed to load shop " + name + ".");
+            }
         }catch(SQLException e){
             plugin.getLogger().log(Level.SEVERE, "Failed to load shops. Preexisting shops will be unusable; new shops may not save.");
             e.printStackTrace();
@@ -99,11 +117,44 @@ public class MySQL extends SQL{
     }
 
     @Override
+    public boolean addShopAdvanced(String name, String colors){
+        connect();
+        try {
+            PreparedStatement statement = connection.prepareStatement("insert into shops_advanced values ('" + name + "', '" + colors + "')");
+            statement.executeUpdate();
+            return true;
+        }catch(SQLException e){
+            plugin.getLogger().log(Level.SEVERE, "Failed to add " + name + " to the shops list. Items added to this shop will not save.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
     public boolean createShop(String name){
         connect();
         if (!tableExists(name)) {
             try {
-                PreparedStatement statement = connection.prepareStatement("CREATE TABLE " + name + " (price double, page int, indexs int, id VARCHAR(50), item VARCHAR(1500))");
+                PreparedStatement statement = connection.prepareStatement("CREATE TABLE " + name + " (buy double, sell double, page int, indexs int, id VARCHAR(50), item VARCHAR(1500))");
+                statement.executeUpdate();
+                return true;
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to create shop " + name + ". Items added to this shop will not save.");
+                e.printStackTrace();
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
+    @Override
+    public boolean createShopAdvanced(String name){
+        connect();
+        if (!tableExists(name)) {
+            try {
+                PreparedStatement statement = connection.prepareStatement("CREATE TABLE " + name +
+                        " (buy double, sell double, page int, indexs int, id VARCHAR(1500), item VARCHAR(1500), commands VARCHAR(1500), info VARCHAR(1500))");
                 statement.executeUpdate();
                 return true;
             } catch (SQLException e) {
@@ -121,6 +172,22 @@ public class MySQL extends SQL{
         connect();
         try {
             PreparedStatement statement = connection.prepareStatement("delete from shops where name='" + name + "'");
+            statement.executeUpdate();
+            PreparedStatement statement2 = connection.prepareStatement("DROP TABLE " + name);
+            statement2.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to delete shop " + name + ".");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteShopAdvanced(String name){
+        connect();
+        try {
+            PreparedStatement statement = connection.prepareStatement("delete from shops_advanced where name='" + name + "'");
             statement.executeUpdate();
             PreparedStatement statement2 = connection.prepareStatement("DROP TABLE " + name);
             statement2.executeUpdate();
@@ -151,8 +218,29 @@ public class MySQL extends SQL{
         if (tableExists(name)) {
             try {
                 PreparedStatement statement = connection.prepareStatement("insert into " + name + " values ('" +
-                        item.getPrice() + "', '" + item.getPage() + "', '" + item.getIndex() + "', '" + item.getID() + "', '"
+                        item.getPrice() + "', '" + item.getSellPrice() + "', '" + item.getPage() + "', '" + item.getIndex() + "', '" + item.getID() + "', '"
                         + itemStackToBase64(item.getItem()) + "')");
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to add items to shop " + name + ".");
+                e.printStackTrace();
+            }
+        }else{
+            plugin.getLogger().log(Level.WARNING, "The shop " + name + " does not exist in the database. The item" +
+                    " could not be added.");
+        }
+    }
+
+    @Override
+    public void addItemAdvanced(UIItemData item, String name){
+        connect();
+        if (tableExists(name)) {
+            try {
+                String commands = item.getCommandsString();
+                String lore = item.getLoreString();
+                PreparedStatement statement = connection.prepareStatement("insert into " + name + " values ('" +
+                        item.getPrice() + "', '" + item.getSellPrice() + "', '" + item.getPage() + "', '" + item.getIndex() + "', '" + item.getID() + "', '"
+                        + itemStackToBase64(item.getItem()) + "', '" + commands + "', '" + lore + "')");
                 statement.executeUpdate();
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.WARNING, "Failed to add items to shop " + name + ".");

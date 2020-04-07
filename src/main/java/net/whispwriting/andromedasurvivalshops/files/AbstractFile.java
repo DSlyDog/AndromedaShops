@@ -1,6 +1,6 @@
 package net.whispwriting.andromedasurvivalshops.files;
 
-import net.whispwriting.andromedasurvivalshops.AndromedaShops;
+import net.whispwriting.andromedasurvivalshops.AylaShops;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -9,13 +9,13 @@ import java.io.IOException;
 
 abstract class AbstractFile {
 
-    private AndromedaShops plugin;
+    private AylaShops plugin;
     private File file;
     protected FileConfiguration config;
     private File dir;
     private String filename;
 
-    public AbstractFile(AndromedaShops pl, String filename, String d){
+    public AbstractFile(AylaShops pl, String filename, String d){
         plugin = pl;
         this.filename = filename;
         File dir = new File(pl.getDataFolder() + d);

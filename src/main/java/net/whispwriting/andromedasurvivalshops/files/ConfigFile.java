@@ -1,10 +1,10 @@
 package net.whispwriting.andromedasurvivalshops.files;
 
-import net.whispwriting.andromedasurvivalshops.AndromedaShops;
+import net.whispwriting.andromedasurvivalshops.AylaShops;
 
 public class ConfigFile extends AbstractFile {
 
-    public ConfigFile(AndromedaShops pl) {
+    public ConfigFile(AylaShops pl) {
         super(pl, "config.yml", "");
     }
 
